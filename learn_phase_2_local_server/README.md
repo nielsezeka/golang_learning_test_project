@@ -1,6 +1,16 @@
 # Quiz API Project
 
-This project is a Go (Golang) API server using Gin and PostgreSQL, featuring JWT authentication and a sample quiz API.
+This project is a Go (Golang) API server using Gin and PostgreSQL.  
+It features JWT authentication and a sample quiz API.
+
+Built during my quest to master Go (Golang)—and to finally understand  
+what all those curly braces are for. :v
+
+If you spot any bugs, have suggestions, or strong opinions about  
+tabs vs spaces, let me know!
+
+Special thanks to GitHub Copilot, my tireless AI sidekick,  
+for saving me from countless typos and existential crises.
 
 ## Prerequisites
 - Go 1.18 or newer
@@ -79,12 +89,8 @@ go test ./...
 
 **Note:**
 - For production, use secure password storage and environment variables for secrets.
-- **Export your database:**
-```sh
-pg_dump -U postgres -h localhost -F c -b -v -f postgres.backup test_db
-```
 
-**Import your database:**
+**Import test database:**
 ```sh
 pg_restore -U postgres -h localhost -d test_db -c -v postgres.backup
 ```

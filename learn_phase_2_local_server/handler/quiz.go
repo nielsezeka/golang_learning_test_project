@@ -2,10 +2,9 @@ package handler
 
 import (
 	"fmt"
-	"net/http"
-
 	"learn_phase_2_local_server/db"
-
+	"learn_phase_2_local_server/utils"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,7 @@ func GetQuiz(c *gin.Context) {
 	for rows.Next() {
 		err := rows.Scan(&id, &question, pq.Array(&options), pq.Array(&answers))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
 			return
 		}
 		quiz := map[string]interface{}{
@@ -34,7 +33,7 @@ func GetQuiz(c *gin.Context) {
 		quizzes = append(quizzes, quiz)
 	}
 	if err := rows.Err(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, quizzes)
@@ -46,11 +45,11 @@ func PostQuiz(c *gin.Context) {
 		Options  []string `json:"options"`
 		Answers  []string `json:"answers"`
 	}
+
 	if err := c.ShouldBindJSON(&quiz); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
 		return
 	}
-
 	var id int
 	err := db.DB.QueryRow(
 		`INSERT INTO quiz_table (question, options, answers) 
@@ -58,7 +57,7 @@ func PostQuiz(c *gin.Context) {
 		quiz.Question, pq.Array(quiz.Options), pq.Array(quiz.Answers),
 	).Scan(&id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -77,12 +76,12 @@ func DeleteQuiz(c *gin.Context) {
 	id := c.Param("id")
 	result, err := db.DB.Exec("DELETE FROM quiz_table WHERE id = $1", id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
 		return
 	}
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Quiz not found"})
+		utils.ErrorReturnHandler(c, http.StatusNotFound, fmt.Errorf("quiz not found"))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Quiz deleted successfully"})
@@ -92,40 +91,22 @@ func UpdateQuiz(c *gin.Context) {
 	id := c.Param("id")
 	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
 		return
 	}
 
-	setClauses := []string{}
-	args := []interface{}{}
-	argIdx := 1
-
-	if question, ok := input["question"].(string); ok {
-		setClauses = append(setClauses, fmt.Sprintf("question = $%d", argIdx))
-		args = append(args, question)
-		argIdx++
+	allowedFields := map[string]func(interface{}) (interface{}, error){
+		"question": utils.StringConverter,
+		"options":  utils.StringArrayConverter,
+		"answers":  utils.StringArrayConverter,
 	}
-	if options, ok := input["options"].([]interface{}); ok {
-		strOptions := make([]string, len(options))
-		for i, v := range options {
-			strOptions[i], _ = v.(string)
-		}
-		setClauses = append(setClauses, fmt.Sprintf("options = $%d", argIdx))
-		args = append(args, pq.Array(strOptions))
-		argIdx++
+	setClauses, args, argIdx, err := utils.BuildUpdateQuery(input, allowedFields, 1)
+	if err != nil {
+		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
+		return
 	}
-	if answers, ok := input["answers"].([]interface{}); ok {
-		strAnswers := make([]string, len(answers))
-		for i, v := range answers {
-			strAnswers[i], _ = v.(string)
-		}
-		setClauses = append(setClauses, fmt.Sprintf("answers = $%d", argIdx))
-		args = append(args, pq.Array(strAnswers))
-		argIdx++
-	}
-
 	if len(setClauses) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No fields to update"})
+		utils.ErrorReturnHandler(c, http.StatusBadRequest, fmt.Errorf("no fields to update"))
 		return
 	}
 
@@ -135,12 +116,12 @@ func UpdateQuiz(c *gin.Context) {
 
 	result, err := db.DB.Exec(query, args...)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
 		return
 	}
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Quiz not found"})
+		utils.ErrorReturnHandler(c, http.StatusNotFound, fmt.Errorf("quiz not found"))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Quiz updated successfully"})
