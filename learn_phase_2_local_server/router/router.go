@@ -20,7 +20,7 @@ func SetupRouter() *gin.Engine {
 		api.PUT("/quiz/:id", handler.UpdateQuiz)
 		api.DELETE("/quiz/:id", handler.DeleteQuiz)
 	}
-
+	r.Static("/swagger_ui", "./swagger-ui/dist")
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "Hello, Gin!"})
 	})

@@ -94,3 +94,8 @@ go test ./...
 ```sh
 pg_restore -U postgres -h localhost -d test_db -c -v postgres.backup
 ```
+## 9. API Documentation (Swagger)
+
+The API is documented using Swagger.  
+After starting the server, you can access the Swagger UI at:  
+[http://localhost:8080/swagger_ui/](http://localhost:8080/swagger_ui/) (if running locally).

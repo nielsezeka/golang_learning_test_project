@@ -11,6 +11,16 @@ import (
 	"github.com/lib/pq"
 )
 
+// GetQuiz godoc
+//
+//	@Summary		Get all quizzes
+//	@Description	Returns a list of all quizzes
+//	@Tags			quiz
+//	@Produce		json
+//	@Success		200	{array}		map[string]interface{}
+//	@Failure		500	{object}	map[string]string
+//	@Security		BearerAuth
+//	@Router			/api/quiz [get]
 func GetQuiz(c *gin.Context) {
 	rows, _ := db.DB.Query("SELECT * FROM quiz_table")
 
@@ -39,6 +49,19 @@ func GetQuiz(c *gin.Context) {
 	c.JSON(http.StatusOK, quizzes)
 }
 
+// PostQuiz godoc
+//
+//	@Summary		Create a new quiz
+//	@Description	Create a new quiz with question, options, and answers (all required, options/answers must be arrays of strings)
+//	@Tags			quiz
+//	@Accept			json
+//	@Produce		json
+//	@Param			quiz	body		object	true	"Quiz object"	example({"question": "What is the capital?", "options": ["A", "B"], "answers": ["A"]})
+//	@Success		201		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		BearerAuth
+//	@Router			/api/quiz [post]
 func PostQuiz(c *gin.Context) {
 	var quiz struct {
 		Question string   `json:"question"`
@@ -72,6 +95,18 @@ func PostQuiz(c *gin.Context) {
 	})
 }
 
+// DeleteQuiz godoc
+//
+//	@Summary		Delete a quiz
+//	@Description	Delete a quiz by ID
+//	@Tags			quiz
+//	@Produce		json
+//	@Param			id	path		int	true	"Quiz ID"
+//	@Success		200	{object}	map[string]string
+//	@Failure		404	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Security		BearerAuth
+//	@Router			/api/quiz/{id} [delete]
 func DeleteQuiz(c *gin.Context) {
 	id := c.Param("id")
 	result, err := db.DB.Exec("DELETE FROM quiz_table WHERE id = $1", id)
@@ -87,6 +122,21 @@ func DeleteQuiz(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Quiz deleted successfully"})
 }
 
+// UpdateQuiz godoc
+//
+//	@Summary		Update a quiz
+//	@Description	Update quiz fields (question, options, answers) by ID. Only provided fields will be updated. Types must match the struct: question (string), options/answers ([]string).
+//	@Tags			quiz
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int		true	"Quiz ID"
+//	@Param			quiz	body		object	true	"Quiz object (partial allowed)"	example({"question": "New Q", "options": ["A", "B"]})
+//	@Success		200		{object}	map[string]string
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		BearerAuth
+//	@Router			/api/quiz/{id} [put]
 func UpdateQuiz(c *gin.Context) {
 	id := c.Param("id")
 	var input map[string]interface{}

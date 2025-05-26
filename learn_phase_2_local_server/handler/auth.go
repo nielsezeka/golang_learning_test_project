@@ -25,15 +25,15 @@ var demoUser = struct {
 }
 
 // Login godoc
-// @Summary      User login
-// @Description  Authenticates user and returns JWT token
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        credentials  body  object  true  "User credentials"
-// @Success      200  {object}  map[string]string
-// @Failure      401  {object}  map[string]string
-// @Router       /api/login [post]
+//	@Summary		User login
+//	@Description	Authenticates user and returns JWT token
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			credentials	body		object	true	"User credentials"
+//	@Success		200			{object}	map[string]string
+//	@Failure		401			{object}	map[string]string
+//	@Router			/api/login [post]
 func Login(c *gin.Context) {
 	var req struct {
 		Username string `json:"username"`
@@ -77,15 +77,15 @@ func Login(c *gin.Context) {
 }
 
 // Refresh godoc
-// @Summary      Refresh JWT token
-// @Description  Get a new access token using a refresh token
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        refresh_token  body  object  true  "Refresh token"
-// @Success      200  {object}  map[string]string
-// @Failure      401  {object}  map[string]string
-// @Router       /api/refresh [post]
+//	@Summary		Refresh JWT token
+//	@Description	Get a new access token using a refresh token
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			refresh_token	body		object	true	"Refresh token"
+//	@Success		200				{object}	map[string]string
+//	@Failure		401				{object}	map[string]string
+//	@Router			/api/refresh [post]
 func Refresh(c *gin.Context) {
 	var req struct {
 		RefreshToken string `json:"refresh_token"`

@@ -1,0 +1,220 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for Quiz Application
+  title: Quiz API
+  version: "1.0"
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates user and returns JWT token
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - auth
+  /api/quiz:
+    get:
+      description: Returns a list of all quizzes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all quizzes
+      tags:
+      - quiz
+    post:
+      consumes:
+      - application/json
+      description: Create a new quiz with question, options, and answers (all required,
+        options/answers must be arrays of strings)
+      parameters:
+      - description: Quiz object
+        in: body
+        name: quiz
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new quiz
+      tags:
+      - quiz
+  /api/quiz/{id}:
+    delete:
+      description: Delete a quiz by ID
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a quiz
+      tags:
+      - quiz
+    put:
+      consumes:
+      - application/json
+      description: 'Update quiz fields (question, options, answers) by ID. Only provided
+        fields will be updated. Types must match the struct: question (string), options/answers
+        ([]string).'
+      parameters:
+      - description: Quiz ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Quiz object (partial allowed)
+        in: body
+        name: quiz
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a quiz
+      tags:
+      - quiz
+  /api/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get a new access token using a refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh JWT token
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+swagger: "2.0"
