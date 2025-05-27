@@ -1,8 +1,8 @@
-//	@title			Quiz API
-//	@version		1.0
-//	@description	API Server for Quiz Application
-//	@host			localhost:8080
-//	@BasePath		/
+// @title			Quiz API
+// @version		1.0
+// @description	API Server for Quiz Application
+// @host			localhost:8080
+// @BasePath		/
 package main
 
 import (
