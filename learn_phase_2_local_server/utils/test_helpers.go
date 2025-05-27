@@ -185,6 +185,12 @@ func (ts *TestSetup) AssertResponse(t *testing.T, expectedStatus int) map[string
 	return response
 }
 
+// AssertErrorWithStatus validates an error response with a given status and error message
+func (ts *TestSetup) AssertErrorWithStatus(t *testing.T, status int, expectedError string) {
+	response := ts.AssertResponse(t, status)
+	assert.Equal(t, expectedError, response["error"])
+}
+
 // AssertSuccessResponse validates a successful login response with tokens
 func (ts *TestSetup) AssertSuccessResponse(t *testing.T) {
 	response := ts.AssertResponse(t, http.StatusOK)
@@ -205,23 +211,20 @@ func (ts *TestSetup) AssertRefreshSuccessResponse(t *testing.T) {
 
 // AssertErrorResponse validates an unauthorized error response
 func (ts *TestSetup) AssertErrorResponse(t *testing.T, expectedError string) {
-	response := ts.AssertResponse(t, http.StatusUnauthorized)
-	assert.Equal(t, expectedError, response["error"])
+	ts.AssertErrorWithStatus(t, http.StatusUnauthorized, expectedError)
 }
 
 // AssertBadRequestResponse validates a bad request error response
 func (ts *TestSetup) AssertBadRequestResponse(t *testing.T, expectedError string) {
-	response := ts.AssertResponse(t, http.StatusBadRequest)
-	assert.Equal(t, expectedError, response["error"])
+	ts.AssertErrorWithStatus(t, http.StatusBadRequest, expectedError)
 }
 
 // AssertUnauthorizedResponse validates an unauthorized error response (alias for AssertErrorResponse)
 func (ts *TestSetup) AssertUnauthorizedResponse(t *testing.T, expectedError string) {
-	ts.AssertErrorResponse(t, expectedError)
+	ts.AssertErrorWithStatus(t, http.StatusUnauthorized, expectedError)
 }
 
 // AssertInternalServerErrorResponse validates a server error response
 func (ts *TestSetup) AssertInternalServerErrorResponse(t *testing.T, expectedError string) {
-	response := ts.AssertResponse(t, http.StatusInternalServerError)
-	assert.Equal(t, expectedError, response["error"])
+	ts.AssertErrorWithStatus(t, http.StatusInternalServerError, expectedError)
 }
