@@ -17,6 +17,32 @@ for saving me from countless typos and existential crises.
 - PostgreSQL (tested on v14+)
 - [Homebrew](https://brew.sh/) (for macOS users)
 
+## Project Features
+
+This project demonstrates modern Go web development practices with focus on:
+
+### Core Architecture
+- **Modular Project Structure** — Clean separation of concerns with organized packages (handler, router, db, utils, docs)
+- **Gin Web Framework** — RESTful API server with routing and middleware support
+- **PostgreSQL Integration** — Database connection, migration support, and SQL operations
+
+### Authentication & Security
+- **JWT Authentication System** — Complete auth flow with login, registration, token refresh, and secure password handling
+- **Security Middleware** — JWT token validation, CORS handling, and request authentication
+- **Password Security** — Bcrypt hashing for secure password storage
+
+### API Development
+- **CRUD Operations** — Full Create, Read, Update, Delete functionality for quiz management
+- **Route Handlers** — Organized endpoint handlers for authentication and quiz operations
+- **Response Utilities** — Standardized JSON response formatting and error handling
+- **Swagger Documentation** — Auto-generated API docs with interactive UI interface
+
+### Development Tools
+- **Comprehensive Testing** — Unit tests for router and authentication functionality
+- **Database Backup/Restore** — PostgreSQL backup file for easy project setup
+- **Environment Configuration** — Flexible database connection and server configuration
+
+
 ## 1. Install PostgreSQL
 
 **On macOS (using Homebrew):**
