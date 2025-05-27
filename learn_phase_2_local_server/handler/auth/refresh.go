@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"learn_phase_2_local_server/utils"
 	"net/http"
 	"time"
 
@@ -24,7 +25,7 @@ func Refresh(c *gin.Context) {
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: "Invalid request"})
 		return
 	}
 	// Validate refresh token
@@ -32,22 +33,22 @@ func Refresh(c *gin.Context) {
 		return []byte(refreshSecret), nil
 	})
 	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
+		c.JSON(http.StatusUnauthorized, utils.APIError{Error: "Invalid refresh token"})
 		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || claims["user_id"] == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token claims"})
+		c.JSON(http.StatusUnauthorized, utils.APIError{Error: "Invalid refresh token claims"})
 		return
 	}
 	userID := int(claims["user_id"].(float64))
 	if refreshTokens[req.RefreshToken] != userID {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token not recognized"})
+		c.JSON(http.StatusUnauthorized, utils.APIError{Error: "Refresh token not recognized"})
 		return
 	}
 	newTokenString, err := createToken(userID, []byte(jwtSecret), time.Minute*15)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: "Could not generate token"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"token": newTokenString})

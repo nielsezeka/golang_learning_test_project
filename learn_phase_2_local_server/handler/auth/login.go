@@ -2,6 +2,7 @@ package auth
 
 import (
 	"learn_phase_2_local_server/db"
+	"learn_phase_2_local_server/utils"
 	"net/http"
 	"time"
 
@@ -33,7 +34,7 @@ func Login(c *gin.Context) {
 		Password string `json:"password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: "Invalid request"})
 		return
 	}
 
@@ -45,25 +46,25 @@ func Login(c *gin.Context) {
 	err := db.DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", req.Username).
 		Scan(&user.ID, &user.Username, &user.PasswordHash)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User does not existed"})
+		c.JSON(http.StatusUnauthorized, utils.APIError{Error: "User does not existed"})
 		return
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password+hashPassKey)) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+		c.JSON(http.StatusUnauthorized, utils.APIError{Error: "Invalid password"})
 		return
 	}
 
 	userID := user.ID
 	tokenString, err := createToken(userID, []byte(jwtSecret), time.Minute*15)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: "Could not generate token"})
 		return
 	}
 
 	refreshTokenString, err := createToken(userID, []byte(refreshSecret), time.Hour*24*7)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate refresh token"})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: "Could not generate refresh token"})
 		return
 	}
 	refreshTokens[refreshTokenString] = userID

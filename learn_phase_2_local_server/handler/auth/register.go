@@ -2,6 +2,7 @@ package auth
 
 import (
 	"learn_phase_2_local_server/db"
+	"learn_phase_2_local_server/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,31 +37,31 @@ type RegisterResponse struct {
 func Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: "Invalid request"})
 		return
 	}
 	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username and password required"})
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: "Username and password required"})
 		return
 	}
 	var exists bool
 	err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)", req.Username).Scan(&exists)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: "Database error"})
 		return
 	}
 	if exists {
-		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+		c.JSON(http.StatusConflict, utils.APIError{Error: "Username already exists"})
 		return
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password+hashPassKey), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: "Could not hash password"})
 		return
 	}
 	_, err = db.DB.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", req.Username, string(hash))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, RegisterResponse{Message: "User registered successfully"})

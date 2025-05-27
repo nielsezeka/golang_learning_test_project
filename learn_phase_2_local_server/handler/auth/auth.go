@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"learn_phase_2_local_server/utils"
 	"net/http"
 	"os"
 	"strings"
@@ -25,7 +26,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing or invalid Authorization header"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.APIError{Error: "Missing or invalid Authorization header"})
 			return
 		}
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
@@ -33,7 +34,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return jwtSecret, nil
 		})
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.APIError{Error: "Invalid or expired token"})
 			return
 		}
 		c.Set("claims", token.Claims)
