@@ -31,7 +31,7 @@ func GetQuiz(c *gin.Context) {
 	for rows.Next() {
 		err := rows.Scan(&id, &question, pq.Array(&options), pq.Array(&answers))
 		if err != nil {
-			utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 			return
 		}
 		quiz := map[string]interface{}{
@@ -43,7 +43,7 @@ func GetQuiz(c *gin.Context) {
 		quizzes = append(quizzes, quiz)
 	}
 	if err := rows.Err(); err != nil {
-		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, quizzes)
@@ -70,7 +70,7 @@ func PostQuiz(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&quiz); err != nil {
-		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: err.Error()})
 		return
 	}
 	var id int
@@ -80,7 +80,7 @@ func PostQuiz(c *gin.Context) {
 		quiz.Question, pq.Array(quiz.Options), pq.Array(quiz.Answers),
 	).Scan(&id)
 	if err != nil {
-		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 		return
 	}
 
@@ -111,12 +111,12 @@ func DeleteQuiz(c *gin.Context) {
 	id := c.Param("id")
 	result, err := db.DB.Exec("DELETE FROM quiz_table WHERE id = $1", id)
 	if err != nil {
-		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 		return
 	}
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		utils.ErrorReturnHandler(c, http.StatusNotFound, fmt.Errorf("quiz not found"))
+		c.JSON(http.StatusNotFound, utils.APIError{Error: "quiz not found"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Quiz deleted successfully"})
@@ -130,18 +130,18 @@ func DeleteQuiz(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		int		true	"Quiz ID"
-//	@Param			quiz	body		object	true	"Quiz object (partial allowed)"	example({"question": "New Q", "options": ["A", "B"]})
-//	@Success		200		{object}	map[string]string
-//	@Failure		400		{object}	map[string]string
-//	@Failure		404		{object}	map[string]string
-//	@Failure		500		{object}	map[string]string
+//	@Param			quiz	body		QuizUpdateInput	true	"Quiz object (partial allowed)"	example({"question": "New Q", "options": ["A", "B"]})
+//	@Success		200		{object}	QuizUpdateSuccess
+//	@Failure		400		{object}	utils.APIError
+//	@Failure		404		{object}	utils.APIError
+//	@Failure		500		{object}	utils.APIError
 //	@Security		BearerAuth
 //	@Router			/api/quiz/{id} [put]
 func UpdateQuiz(c *gin.Context) {
 	id := c.Param("id")
 	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: err.Error()})
 		return
 	}
 
@@ -152,11 +152,11 @@ func UpdateQuiz(c *gin.Context) {
 	}
 	setClauses, args, argIdx, err := utils.BuildUpdateQuery(input, allowedFields, 1)
 	if err != nil {
-		utils.ErrorReturnHandler(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: err.Error()})
 		return
 	}
 	if len(setClauses) == 0 {
-		utils.ErrorReturnHandler(c, http.StatusBadRequest, fmt.Errorf("no fields to update"))
+		c.JSON(http.StatusBadRequest, utils.APIError{Error: "no fields to update"})
 		return
 	}
 
@@ -166,13 +166,19 @@ func UpdateQuiz(c *gin.Context) {
 
 	result, err := db.DB.Exec(query, args...)
 	if err != nil {
-		utils.ErrorReturnHandler(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, utils.APIError{Error: err.Error()})
 		return
 	}
 	rowsAffected, _ := result.RowsAffected()
 	if rowsAffected == 0 {
-		utils.ErrorReturnHandler(c, http.StatusNotFound, fmt.Errorf("quiz not found"))
+		c.JSON(http.StatusNotFound, utils.APIError{Error: "quiz not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Quiz updated successfully"})
+	c.JSON(http.StatusOK, QuizUpdateSuccess{Message: "Quiz updated successfully"})
+}
+
+// QuizUpdateSuccess represents a successful quiz update response
+// swagger:model
+type QuizUpdateSuccess struct {
+	Message string `json:"message"`
 }
