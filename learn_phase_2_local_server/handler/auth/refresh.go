@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +29,7 @@ func Refresh(c *gin.Context) {
 	}
 	// Validate refresh token
 	token, err := jwt.Parse(req.RefreshToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("REFRESH_SECRET")), nil
+		return []byte(refreshSecret), nil
 	})
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
@@ -46,7 +45,7 @@ func Refresh(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token not recognized"})
 		return
 	}
-	newTokenString, err := createToken(userID, []byte(os.Getenv("JWT_SECRET")), time.Minute*15)
+	newTokenString, err := createToken(userID, []byte(jwtSecret), time.Minute*15)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return

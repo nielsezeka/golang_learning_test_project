@@ -18,7 +18,7 @@ func init() {
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 var refreshSecret = []byte(os.Getenv("REFRESH_SECRET"))
 var hashPassKey = os.Getenv("HASH_PASS_KEY")
-var refreshTokens = make(map[string]int) // map refreshToken -> userID
+var refreshTokens = make(map[string]int)
 
 // AuthMiddleware checks for a valid JWT token in the Authorization header
 func AuthMiddleware() gin.HandlerFunc {
@@ -48,4 +48,11 @@ func createToken(userID int, secret []byte, duration time.Duration) (string, err
 		"exp":     time.Now().Add(duration).Unix(),
 	})
 	return token.SignedString(secret)
+}
+
+// RegisterQuizRoutes registers quiz-related routes to the given router group.
+func RegisterAuthRoutes(r *gin.RouterGroup) {
+	r.POST("/login", Login)
+	r.POST("/register", Register)
+	r.POST("/refresh", Refresh)
 }

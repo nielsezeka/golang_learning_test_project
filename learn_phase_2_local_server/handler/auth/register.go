@@ -3,7 +3,6 @@ package auth
 import (
 	"learn_phase_2_local_server/db"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -54,7 +53,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
 		return
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password+os.Getenv("HASH_PASS_KEY")), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password+hashPassKey), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not hash password"})
 		return

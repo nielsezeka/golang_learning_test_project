@@ -3,7 +3,6 @@ package auth
 import (
 	"learn_phase_2_local_server/db"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -50,19 +49,19 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password+os.Getenv("HASH_PASS_KEY"))) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password+hashPassKey)) != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
 		return
 	}
 
 	userID := user.ID
-	tokenString, err := createToken(userID, []byte(os.Getenv("JWT_SECRET")), time.Minute*15)
+	tokenString, err := createToken(userID, []byte(jwtSecret), time.Minute*15)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 		return
 	}
 
-	refreshTokenString, err := createToken(userID, []byte(os.Getenv("REFRESH_SECRET")), time.Hour*24*7)
+	refreshTokenString, err := createToken(userID, []byte(refreshSecret), time.Hour*24*7)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate refresh token"})
 		return
